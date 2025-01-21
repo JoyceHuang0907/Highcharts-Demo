@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 Highcharts - 隨機圖表展示 🎲</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #f0f8ff, #e6f7ff);
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        #chart-container {
+            width: 80%;
+            height: 500px;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #ffffff;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎲 Highcharts - 隨機圖表展示 🎲</h1>
+    <div id="chart-container"></div>
+    <button onclick="generateRandomChart()">🎨 產生隨機圖表</button>
+
+    <script>
+        // 可用的圖表類型
+        const chartTypes = ['line', 'bar', 'column', 'pie', 'scatter', 'area'];
+
+        // 隨機顏色生成
+        function getRandomColor() {
+            return '#' + Math.floor(Math.random() * 16777215).toString(16);
+        }
+
+        // 從 URL 查詢字串中提取參數
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                xUnit: params.get('xUnit') || 'X 軸',
+                xValues: params.get('xValues')?.split(',') || ['一月', '二月', '三月'],
+                yUnit: params.get('yUnit') || 'Y 軸',
+                yValues: params.get('yValues')?.split(',').map(Number) || [10, 20, 30],
+                title: params.get('title') || '隨機圖表'
+            };
+        }
+
+        // 生成隨機圖表
+        async function generateRandomChart() {
+            const data = getQueryParams();
+
+            // 隨機選擇圖表類型
+            const randomChartType = chartTypes[Math.floor(Math.random() * chartTypes.length)];
+            console.log('選擇的圖表類型:', randomChartType);
+
+            // 設定基礎圖表選項
+            const chartOptions = {
+                chart: {
+                    renderTo: 'chart-container',
+                    type: randomChartType,
+                    backgroundColor: {
+                        linearGradient: [0, 0, 500, 500],
+                        stops: [
+                            [0, getRandomColor()],
+                            [1, getRandomColor()]
+                        ]
+                    }
+                },
+                title: {
+                    text: data.title,
+                    style: {
+                        color: '#2c3e50',
+                        fontSize: '18px'
+                    }
+                },
+                xAxis: {
+                    categories: data.xValues,
+                    title: {
+                        text: data.xUnit
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: data.yUnit
+                    }
+                },
+                series: [{
+                    name: data.yUnit,
+                    data: data.yValues
+                }]
+            };
+
+            // 如果是 Pie 圖表，調整資料格式
+            if (randomChartType === 'pie') {
+                chartOptions.series = [{
+                    type: 'pie',
+                    name: data.yUnit,
+                    data: data.xValues.map((category, index) => ({
+                        name: category,
+                        y: data.yValues[index] || Math.random() * 100,
+                        color: getRandomColor()
+                    }))
+                }];
+                chartOptions.plotOptions = {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                        }
+                    }
+                };
+            }
+
+            // 建立 Highcharts 圖表
+            Highcharts.chart(chartOptions);
+        }
+
+        // 頁面加載時自動產生圖表
+        document.addEventListener('DOMContentLoaded', generateRandomChart);
+    </script>
+</body>
+</html>
